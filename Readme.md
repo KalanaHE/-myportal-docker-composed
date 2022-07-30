@@ -1,0 +1,1 @@
+once cluster is up ssh to 'docker-composed-myportal-api-1' and run "npm run db:migrate" and "npm run db:seed"

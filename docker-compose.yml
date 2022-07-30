@@ -1,0 +1,53 @@
+version: '3.8'
+services:
+  mysqldb:
+    image: mysql:5.7
+    restart: unless-stopped
+    env_file: ./.env
+    environment:
+      - MYSQL_ROOT_PASSWORD=$MYSQLDB_ROOT_PASSWORD
+      - MYSQL_DATABASE=$MYSQLDB_DATABASE
+    ports:
+      - $MYSQLDB_LOCAL_PORT:$MYSQLDB_DOCKER_PORT
+    volumes:
+      - db:/var/lib/mysql
+    networks:
+      - backend
+
+
+  myportal-api:
+    depends_on:
+      - mysqldb
+    build: ./backend
+    restart: unless-stopped
+    env_file: ./.env
+    ports:
+      - $NODE_LOCAL_PORT:$NODE_DOCKER_PORT
+    environment:
+      - NODE_ENV=$NODE_ENV
+      - API_VERSION_PREFIX=$API_VERSION_PREFIX
+      - API_PORT=$API_PORT
+      - SALT_ROUNDS=$SALT_ROUNDS
+      - JWT_SECRET=$JWT_SECRET
+      - JWT_LIFESPAN=$JWT_LIFESPAN
+      - DB_CONNECTION_STRING=$DB_CONNECTION_STRING
+    networks:
+      - backend
+      - frontend
+  
+  myportal-ui:
+    depends_on:
+      - myportal-api
+    build: ./frontend
+    environment:
+      - REACT_APP_API_URI=$REACT_APP_API_URI
+    ports:
+      - $REACT_LOCAL_PORT:$REACT_DOCKER_PORT
+    networks:
+      - frontend  
+
+volumes: 
+  db:
+networks:
+  backend:
+  frontend:
